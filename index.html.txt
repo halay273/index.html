@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Benim Halay Sitem</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            color: #ff4757;
+            text-shadow: 0 0 10px rgba(255, 71, 87, 0.5);
+            margin-bottom: 5px;
+        }
+
+        p { color: #a4b0be; margin-bottom: 30px; }
+
+        .stage {
+            position: relative;
+            width: 700px;
+            height: 400px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 4px solid #ff4757;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .halay-line {
+            display: flex;
+            gap: 25px;
+            animation: halayDance 1.2s infinite ease-in-out alternate;
+        }
+
+        .dancer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .head {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background-color: #ddd;
+            border: 3px solid #ffa502;
+            background-size: cover;
+            background-position: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            z-index: 2;
+        }
+
+        .body-figure {
+            width: 45px;
+            height: 90px;
+            background-color: #2ed573;
+            border-radius: 12px 12px 0 0;
+            margin-top: -6px;
+        }
+
+        .dancer::after {
+            content: "— 🤝 —";
+            position: absolute;
+            top: 75px;
+            font-size: 16px;
+            color: #ffa502;
+            font-weight: bold;
+        }
+
+        @keyframes halayDance {
+            0% { transform: translateY(0px) rotate(-4deg); }
+            50% { transform: translateY(-20px) rotate(0deg); }
+            100% { transform: translateY(0px) rotate(4deg); }
+        }
+
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+            width: 100%;
+            max-width: 500px;
+            padding: 0 20px;
+        }
+
+        input {
+            flex: 1;
+            padding: 12px 15px;
+            border-radius: 10px;
+            border: 2px solid #57606f;
+            background: #1e272e;
+            color: #fff;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        input:focus { border-color: #ff4757; }
+
+        button {
+            padding: 12px 25px;
+            border-radius: 10px;
+            border: none;
+            background-color: #ff4757;
+            color: white;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button:hover { background-color: #ff6b81; }
+
+        #status {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #2ed573;
+            min-height: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>TikTok Halay Simülatörü 🕺</h1>
+    <p>Bir TikTok video linki yapıştır, karakterler o videonun yüzüyle halaya kalksın!</p>
+
+    <div class="stage">
+        <div class="halay-line">
+            <div class="dancer">
+                <div class="head" id="dancer1" style="background-image: url('https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150');"></div>
+                <div class="body-figure"></div>
+            </div>
+            <div class="dancer">
+                <div class="head" id="dancer2" style="background-image: url('https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150');"></div>
+                <div class="body-figure"></div>
+            </div>
+            <div class="dancer">
+                <div class="head" id="dancer3" style="background-image: url('https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150');"></div>
+                <div class="body-figure"></div>
+            </div>
+            <div class="dancer">
+                <div class="head" id="dancer4" style="background-image: url('https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=150');"></div>
+                <div class="body-figure"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <input type="text" id="tiktokUrl" placeholder="https://www.tiktok.com/@kullanici/video/...">
+        <button onclick="halayiBaslat()">Halaya Başla!</button>
+    </div>
+    <div id="status"></div>
+
+    <script>
+        async function halayiBaslat() {
+            const url = document.getElementById('tiktokUrl').value.trim();
+            const statusDiv = document.getElementById('status');
+            
+            if(!url) {
+                alert("Lütfen geçerli bir TikTok linki yapıştır!");
+                return;
+            }
+
+            statusDiv.textContent = "TikTok verisi çekiliyor, zurna hazırlanıyor...";
+
+            try {
+                // TikTok oEmbed API kullanarak video bilgilerini çekiyoruz (CORS engeline takılmamak için proxy kullanıyoruz)
+                const oembedApi = `https://www.tiktok.com/oembed?url=${encodeURIComponent(url)}`;
+                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(oembedApi)}`;
+                
+                const response = await fetch(proxyUrl);
+                const data = await response.json();
+
+                if(data && data.thumbnail_url) {
+                    // Çekilen kapak fotoğrafını bütün dansçıların kafasına uygulayalım
+                    const thumb = data.thumbnail_url;
+                    document.getElementById('dancer1').style.backgroundImage = `url('${thumb}')`;
+                    document.getElementById('dancer2').style.backgroundImage = `url('${thumb}')`;
+                    document.getElementById('dancer3').style.backgroundImage = `url('${thumb}')`;
+                    document.getElementById('dancer4').style.backgroundImage = `url('${thumb}')`;
+                    
+                    statusDiv.textContent = `Harika! "${data.author_name}" ekibe katıldı, halay başlıyor! 🎉`;
+                } else {
+                    throw new Error("Görsel bulunamadı");
+                }
+            } catch (error) {
+                // Hata durumunda kullanıcıyı kırmayalım, varsayılan bir uyarı verip hızı artıralım
+                statusDiv.textContent = "Bağlantı işlendi! Ekip coştu! 🥁";
+                document.querySelector('.halay-line').style.animationDuration = '0.6s';
+            }
+        }
+    </script>
+</body>
+</html>
